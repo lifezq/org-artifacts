@@ -10,8 +10,12 @@
 # BYFN tutorial.
 #
 
+################ run example #################
+#### ./org.sh up -c mychannel -t 5 -d 3 l golang -i 1.2.1 -v false
+################ run example #################
+
 # If BYFN wasn't run abort
-if [ ! -d crypto-config ]; then
+if [ ! -d crypto-config -o ! -d channel-artifacts ]; then
   echo
   echo "ERROR: Please, generate first."
   echo
@@ -37,7 +41,6 @@ function printHelp () {
   echo "    -c <channel name> - channel name to use (defaults to \"mychannel\")"
   echo "    -t <timeout> - CLI timeout duration in seconds (defaults to 10)"
   echo "    -d <delay> - delay duration in seconds (defaults to 3)"
-  echo "    -f <docker-compose-file> - specify which docker-compose file use (defaults to docker-compose-cli.yaml)"
   echo "    -l <language> - the chaincode language: golang (default) or node"
   echo "    -i <imagetag> - the tag to be used to launch the network (defaults to \"latest\")"
   echo "    -v - verbose mode"
@@ -103,34 +106,40 @@ function networkUp () {
   #if [ ! -d "crypto-config" ]; then
     #generateCerts
     #generateChannelArtifacts
-    createConfigTx
+    #createConfigTx
   #fi
-  # start org peers
-  IMAGE_TAG=${IMAGETAG} docker-compose -f $COMPOSE_FILE_ORG up -d 2>&1
+  # start cli
+  IMAGE_TAG=${IMAGETAG} docker-compose -f $COMPOSE_FILE up -d 2>&1
   if [ $? -ne 0 ]; then
-    echo "ERROR !!!! Unable to start Org3 network"
+    echo "ERROR !!!! Unable to start cli network"
     exit 1
   fi
+
+  createConfigTx
+
   echo
   echo "###############################################################"
-  echo "############### Have Org3 peers join network ##################"
+  echo "############### Have Org peers join network ##################"
   echo "###############################################################"
-  docker exec Orgcli ./scripts/step2org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
+  docker exec cli ./scripts/step2org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
   if [ $? -ne 0 ]; then
-    echo "ERROR !!!! Unable to have Org3 peers join network"
+    echo "ERROR !!!! Unable to have Org peers join network"
     exit 1
   fi
+
+  exit 0
+
   echo
   echo "###############################################################"
-  echo "##### Upgrade chaincode to have Org3 peers on the network #####"
+  echo "##### Upgrade chaincode to have Org peers on the network #####"
   echo "###############################################################"
   docker exec cli ./scripts/step3org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
   if [ $? -ne 0 ]; then
-    echo "ERROR !!!! Unable to add Org3 peers on network"
+    echo "ERROR !!!! Unable to add Org peers on network"
     exit 1
   fi
   # finish by running the test
-  docker exec Orgcli ./scripts/testorg.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
+  docker exec cli ./scripts/testorg.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to run test"
     exit 1
@@ -139,7 +148,7 @@ function networkUp () {
 
 # Tear down running network
 function networkDown () {
-  docker-compose -f $COMPOSE_FILE -f $COMPOSE_FILE_ORG down --volumes --remove-orphans
+  docker-compose -f $COMPOSE_FILE down --volumes --remove-orphans
   # Don't remove containers, images, etc if restarting
   if [ "$MODE" != "restart" ]; then
     #Cleanup the chaincode containers
@@ -156,9 +165,13 @@ function networkDown () {
 function createConfigTx () {
   echo
   echo "###############################################################"
-  echo "####### Generate and submit config tx to add Org3 #############"
+  echo "####### Generate and submit config tx to add Org #############"
   echo "###############################################################"
-  docker exec cli scripts/step1org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
+  configtxgen -printOrg Org4MSP > ./channel-artifacts/org.json
+  docker cp core.yaml cli:/opt/gopath/src/github.com/hyperledger/fabric/peer/
+  docker exec cli ln -s crypto/peerOrganizations/org1.uniledger.com/users/Admin@org1.uniledger.com/msp ./msp
+  docker exec cli ln -s crypto/peerOrganizations/org1.uniledger.com/users/Admin@org1.uniledger.com/tls ./tls
+  docker exec cli ./scripts/step1org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to create config tx"
     exit 1
@@ -169,7 +182,7 @@ function createConfigTx () {
 # (x509 certs) for the new org.  After we run the tool, the certs will
 # be parked in the BYFN folder titled ``crypto-config``.
 
-# Generates Org3 certs using cryptogen tool
+# Generates Org certs using cryptogen tool
 function generateCerts (){
   which cryptogen
   if [ "$?" -ne 0 ]; then
@@ -178,7 +191,7 @@ function generateCerts (){
   fi
   echo
   echo "###############################################################"
-  echo "##### Generate Org3 certificates using cryptogen tool #########"
+  echo "##### Generate Org certificates using cryptogen tool #########"
   echo "###############################################################"
 
    set -x
@@ -200,15 +213,15 @@ function generateChannelArtifacts() {
     exit 1
   fi
   echo "##########################################################"
-  echo "#########  Generating Org3 config material ###############"
+  echo "#########  Generating Org config material ###############"
   echo "##########################################################"
    export FABRIC_CFG_PATH=$PWD
    set -x
-   configtxgen -printOrg Org3MSP > ../channel-artifacts/org.json
+   configtxgen -printOrg Org${ORGCODE}MSP > ../channel-artifacts/org.json
    res=$?
    set +x
    if [ $res -ne 0 ]; then
-     echo "Failed to generate Org3 config material..."
+     echo "Failed to generate Org config material..."
      exit 1
    fi
   cp -r crypto-config/ordererOrganizations crypto-config/
@@ -230,8 +243,6 @@ CHANNEL_NAME="mychannel"
 # use this as the default docker-compose yaml definition
 COMPOSE_FILE=docker-compose-cli.yaml
 #
-# use this as the default docker-compose yaml definition
-COMPOSE_FILE_ORG=docker-compose-org.yaml
 #
 # use golang as the default language for chaincode
 LANGUAGE=golang
@@ -268,8 +279,6 @@ while getopts "h?c:t:d:f:s:l:i:v" opt; do
     ;;
     d)  CLI_DELAY=$OPTARG
     ;;
-    f)  COMPOSE_FILE=$OPTARG
-    ;;
     l)  LANGUAGE=$OPTARG
     ;;
     i)  IMAGETAG=$OPTARG
@@ -293,8 +302,7 @@ elif [ "${MODE}" == "down" ]; then ## Clear the network
 elif [ "${MODE}" == "generate" ]; then ## Generate Artifacts
   #generateCerts
   #generateChannelArtifacts
-  #createConfigTx
-elif [ "${MODE}" == "restart" ]; then ## Restart the network
+  #createConfigTx elif [ "${MODE}" == "restart" ]; then ## Restart the network
   networkDown
   networkUp
 else

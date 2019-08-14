@@ -10,6 +10,7 @@ ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrga
 PEER0_ORG1_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.uniledger.com/peers/peer0.org1.uniledger.com/tls/ca.crt
 PEER0_ORG2_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.uniledger.com/peers/peer0.org2.uniledger.com/tls/ca.crt
 PEER0_ORG3_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.uniledger.com/peers/peer0.org3.uniledger.com/tls/ca.crt
+PEER0_ORG4_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org4.uniledger.com/peers/peer0.org4.uniledger.com/tls/ca.crt
 
 # verify the result of the end-to-end test
 verifyResult() {
@@ -23,43 +24,55 @@ verifyResult() {
 
 # Set OrdererOrg.Admin globals
 setOrdererGlobals() {
-  CORE_PEER_LOCALMSPID="OrdererMSP"
-  CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/uniledger.com/orderers/orderer1.uniledger.com/msp/tlscacerts/tlsca.uniledger.com-cert.pem
-  CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/uniledger.com/users/Admin@uniledger.com/msp
+  export CORE_PEER_LOCALMSPID="OrdererMSP"
+  export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/uniledger.com/orderers/orderer1.uniledger.com/msp/tlscacerts/tlsca.uniledger.com-cert.pem
+  export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/uniledger.com/users/Admin@uniledger.com/msp
 }
 
 setGlobals() {
   PEER=$1
   ORG=$2
+  export CORE_PEER_TLS_ENABLED=true
   if [ $ORG -eq 1 ]; then
-    CORE_PEER_LOCALMSPID="Org1MSP"
-    CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG1_CA
-    CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.uniledger.com/users/Admin@org1.uniledger.com/msp
+    export CORE_PEER_LOCALMSPID="Org1MSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG1_CA
+    export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.uniledger.com/users/Admin@org1.uniledger.com/msp
     if [ $PEER -eq 0 ]; then
-      CORE_PEER_ADDRESS=peer0.org1.uniledger.com:7051
+      export CORE_PEER_ADDRESS=peer0.org1.uniledger.com:7051
     else
-      CORE_PEER_ADDRESS=peer1.org1.uniledger.com:7051
+      export CORE_PEER_ADDRESS=peer1.org1.uniledger.com:7051
     fi
   elif [ $ORG -eq 2 ]; then
-    CORE_PEER_LOCALMSPID="Org2MSP"
-    CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG2_CA
-    CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.uniledger.com/users/Admin@org2.uniledger.com/msp
+    export CORE_PEER_LOCALMSPID="Org2MSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG2_CA
+    export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.uniledger.com/users/Admin@org2.uniledger.com/msp
     if [ $PEER -eq 0 ]; then
-      CORE_PEER_ADDRESS=peer0.org2.uniledger.com:7051
+      export CORE_PEER_ADDRESS=peer0.org2.uniledger.com:7051
     else
-      CORE_PEER_ADDRESS=peer1.org2.uniledger.com:7051
+      export CORE_PEER_ADDRESS=peer1.org2.uniledger.com:7051
     fi
 
   elif [ $ORG -eq 3 ]; then
-    CORE_PEER_LOCALMSPID="Org3MSP"
-    CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG3_CA
-    CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.uniledger.com/users/Admin@org3.uniledger.com/msp
+    export CORE_PEER_LOCALMSPID="Org3MSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG3_CA
+    export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.uniledger.com/users/Admin@org3.uniledger.com/msp
     if [ $PEER -eq 0 ]; then
-      CORE_PEER_ADDRESS=peer0.org3.uniledger.com:7051
+      export CORE_PEER_ADDRESS=peer0.org3.uniledger.com:7051
     else
-      CORE_PEER_ADDRESS=peer1.org3.uniledger.com:7051
+      export CORE_PEER_ADDRESS=peer1.org3.uniledger.com:7051
+    fi
+
+  elif [ $ORG -eq 4 ]; then
+    export CORE_PEER_LOCALMSPID="Org4MSP"
+    export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG4_CA
+    export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org4.uniledger.com/users/Admin@org4.uniledger.com/msp
+    if [ $PEER -eq 0 ]; then
+      export CORE_PEER_ADDRESS=peer0.org4.uniledger.com:7051
+    else
+      export CORE_PEER_ADDRESS=peer1.org4.uniledger.com:7051
     fi
   else
+
     echo "================== ERROR !!! ORG Unknown =================="
   fi
 
@@ -118,8 +131,10 @@ installChaincode() {
   ORG=$2
   setGlobals $PEER $ORG
   VERSION=${3:-1.0}
+  CHAINCODE_NAME=${4:-mycc}
+
   set -x
-  peer chaincode install -n mycc -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH} >&log.txt
+  peer chaincode install -n $CHAINCODE_NAME -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH} >&log.txt
   res=$?
   set +x
   cat log.txt
@@ -133,18 +148,19 @@ instantiateChaincode() {
   ORG=$2
   setGlobals $PEER $ORG
   VERSION=${3:-1.0}
+  CHAINCODE_NAME=${4:-mycc}
 
   # while 'peer chaincode' command can get the orderer endpoint from the peer
   # (if join was successful), let's supply it directly as we know it using
   # the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode instantiate -o orderer1.uniledger.com:7050 -C $CHANNEL_NAME -n mycc -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["init","a","100","b","200"]}' -P "AND ('Org1MSP.peer','Org2MSP.peer')" >&log.txt
+    peer chaincode instantiate -o orderer1.uniledger.com:7050 -C $CHANNEL_NAME -n $CHAINCODE_NAME -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["init","a","100","b","200"]}' -P "AND ('Org1MSP.peer','Org2MSP.peer')" >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode instantiate -o orderer1.uniledger.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -l ${LANGUAGE} -v 1.0 -c '{"Args":["init","a","100","b","200"]}' -P "AND ('Org1MSP.peer','Org2MSP.peer')" >&log.txt
+    peer chaincode instantiate -o orderer1.uniledger.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME -l ${LANGUAGE} -v ${VERSION} -c '{"Args":["init","a","100","b","200"]}' -P "AND ('Org1MSP.peer','Org2MSP.peer')" >&log.txt
     res=$?
     set +x
   fi
@@ -157,10 +173,13 @@ instantiateChaincode() {
 upgradeChaincode() {
   PEER=$1
   ORG=$2
+  CHAINCODE_NAME=${3:-mycc}
+  VERSION=${3:-2.0}
+
   setGlobals $PEER $ORG
 
   set -x
-  peer chaincode upgrade -o orderer1.uniledger.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc -v 2.0 -c '{"Args":["init","a","90","b","210"]}' -P "AND ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')"
+  peer chaincode upgrade -o orderer1.uniledger.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME -v $VERSION -c '{"Args":["init","a","90","b","210"]}' -P "AND ('Org1MSP.peer','Org2MSP.peer','Org3MSP.peer')"
   res=$?
   set +x
   cat log.txt
@@ -174,6 +193,8 @@ chaincodeQuery() {
   ORG=$2
   setGlobals $PEER $ORG
   EXPECTED_RESULT=$3
+  CHAINCODE_NAME=${4:-mycc}
+
   echo "===================== Querying on peer${PEER}.org${ORG} on channel '$CHANNEL_NAME'... ===================== "
   local rc=1
   local starttime=$(date +%s)
@@ -186,7 +207,7 @@ chaincodeQuery() {
     sleep $DELAY
     echo "Attempting to Query peer${PEER}.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["query","a"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n $CHAINCODE_NAME -c '{"Args":["query","a"]}' >&log.txt
     res=$?
     set +x
     test $res -eq 0 && VALUE=$(cat log.txt | awk '/Query Result/ {print $NF}')
@@ -214,8 +235,9 @@ chaincodeQuery() {
 fetchChannelConfig() {
   CHANNEL=$1
   OUTPUT=$2
-
-  setOrdererGlobals
+  
+  setGlobals 0 1
+  #setOrdererGlobals
 
   echo "Fetching the most recent configuration block for the channel"
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
@@ -295,6 +317,9 @@ parsePeerConnectionParameters() {
 # chaincodeInvoke <peer> <org> ...
 # Accepts as many peer/org pairs as desired and requests endorsement from each
 chaincodeInvoke() {
+
+  CHAINCODE_NAME=${3:-mycc}
+
   parsePeerConnectionParameters $@
   res=$?
   verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
@@ -304,12 +329,12 @@ chaincodeInvoke() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o orderer1.uniledger.com:7050 -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["invoke","a","b","10"]}' >&log.txt
+    peer chaincode invoke -o orderer1.uniledger.com:7050 -C $CHANNEL_NAME -n $CHAINCODE_NAME $PEER_CONN_PARMS -c '{"Args":["invoke","a","b","10"]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o orderer1.uniledger.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["invoke","a","b","10"]}' >&log.txt
+    peer chaincode invoke -o orderer1.uniledger.com:7050 --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n $CHAINCODE_NAME $PEER_CONN_PARMS -c '{"Args":["invoke","a","b","10"]}' >&log.txt
     res=$?
     set +x
   fi

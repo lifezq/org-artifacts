@@ -6,8 +6,20 @@ cli:
   environment:
     - GOPATH=/opt/gopath
     - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+    - FABRIC_CFG_PATH=/opt/gopath/src/github.com/hyperledger/fabric/peer
     #- CORE_LOGGING_LEVEL=INFO
     - CORE_LOGGING_LEVEL=DEBUG
   volumes:
     - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto
     - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts
+    - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    - ./chaincode:/opt/gopath/src/github.com/hyperledger/fabric/examples/chaincode/go/example02
+  extra_hosts:
+    - "peer0.org1.uniledger.com:192.168.56.101"
+    - "peer0.org2.uniledger.com:192.168.56.104"
+    - "peer0.org3.uniledger.com:192.168.56.105"
+    - "peer0.org4.uniledger.com:192.168.56.106"
+    - "orderer1.uniledger.com:192.168.56.101"
+    - "orderer2.uniledger.com:192.168.56.104"
+    - "orderer3.uniledger.com:192.168.56.105"
+  working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer

@@ -12,7 +12,7 @@
 #
 
 echo
-echo "========= Getting Org3 on to your first network ========= "
+echo "========= Getting Org on to your first network ========= "
 echo
 CHANNEL_NAME="$1"
 DELAY="$2"
@@ -28,9 +28,9 @@ LANGUAGE=`echo "$LANGUAGE" | tr [:upper:] [:lower:]`
 COUNTER=1
 MAX_RETRY=5
 
-CC_SRC_PATH="github.com/chaincode/chaincode_example02/go/"
+CC_SRC_PATH="github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd"
 if [ "$LANGUAGE" = "node" ]; then
-	CC_SRC_PATH="/opt/gopath/src/github.com/chaincode/chaincode_example02/node/"
+        CC_SRC_PATH="/opt/gopath/src/github.com/hyperledger/fabric/peer/chaincode_node"
 fi
 
 # import utils
@@ -44,15 +44,22 @@ set +x
 cat log.txt
 verifyResult $res "Fetching config block from orderer has Failed"
 
-joinChannelWithRetry 0 3
-echo "===================== peer0.org joined channel '$CHANNEL_NAME' ===================== "
-joinChannelWithRetry 1 3
-echo "===================== peer1.org joined channel '$CHANNEL_NAME' ===================== "
-echo "Installing chaincode 2.0 on peer0.org..."
-installChaincode 0 3 2.0
 
+joinChannelWithRetry 0 4
+echo "===================== peer0.org joined channel '$CHANNEL_NAME' ===================== "
+
+echo "Installing chaincode 2.0 on peer0.org..."
+installChaincode 0 4 2.0 upgradecc
+
+sleep 6
+
+instantiateChaincode 0 4 2.0 upgradecc
+
+
+chaincodeQuery 0 4 100 upgradecc
+ 
 echo
-echo "========= Org3 is now halfway onto your first network ========= "
+echo "========= Org is now halfway onto your first network ========= "
 echo
 
 exit 0
