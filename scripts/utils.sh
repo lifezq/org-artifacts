@@ -318,7 +318,7 @@ parsePeerConnectionParameters() {
 # Accepts as many peer/org pairs as desired and requests endorsement from each
 chaincodeInvoke() {
 
-  CHAINCODE_NAME=${3:-mycc}
+  CHAINCODE_NAME=${CHAINCODE_NAME:-mycc}
 
   parsePeerConnectionParameters $@
   res=$?

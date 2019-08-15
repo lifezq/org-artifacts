@@ -13,7 +13,7 @@
 #
 
 echo
-echo "========= Finish adding Org to your first network ========= "
+echo "========= Finish adding Org to your fabric network ========= "
 echo
 CHANNEL_NAME="$1"
 DELAY="$2"
@@ -25,14 +25,10 @@ VERBOSE="$5"
 : ${LANGUAGE:="golang"}
 : ${TIMEOUT:="10"}
 : ${VERBOSE:="false"}
+: ${CC_SRC_PATH:="github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd"}
 LANGUAGE=`echo "$LANGUAGE" | tr [:upper:] [:lower:]`
 COUNTER=1
 MAX_RETRY=5
-
-CC_SRC_PATH="github.com/chaincode/chaincode_example02/go/"
-if [ "$LANGUAGE" = "node" ]; then
-	CC_SRC_PATH="/opt/gopath/src/github.com/chaincode/chaincode_example02/node/"
-fi
 
 # import utils
 . scripts/utils.sh
@@ -46,7 +42,7 @@ echo "===================== Upgrading chaincode on peer0.org1 ==================
 upgradeChaincode 0 1
 
 echo
-echo "========= Finished adding Org to your first network! ========= "
+echo "========= Finished adding Org to your fabric network! ========= "
 echo
 
 exit 0

@@ -11,7 +11,7 @@
 #
 
 ################ run example #################
-#### ./org.sh up -c mychannel -t 5 -d 3 l golang -i 1.2.1 -v false
+#### ./org.sh up -c mychannel -t 5 -d 3 l golang -i 1.2.1 -v false -o 4
 ################ run example #################
 
 # If BYFN wasn't run abort
@@ -28,6 +28,11 @@ export PATH=${PWD}/../bin:${PWD}:$PATH
 export FABRIC_CFG_PATH=${PWD}
 export VERBOSE=false
 
+CC_SRC_PATH="github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd"
+if [ "$LANGUAGE" = "node" ]; then
+        CC_SRC_PATH="/opt/gopath/src/github.com/chaincode/chaincode_example02/node/"
+fi
+
 # Print the usage message
 function printHelp () {
   echo "Usage: "
@@ -39,6 +44,7 @@ function printHelp () {
   echo "      - 'restart' - restart the network"
   echo "      - 'generate' - generate required certificates and genesis block"
   echo "    -c <channel name> - channel name to use (defaults to \"mychannel\")"
+  echo "    -o <org code> - org code (defaults to \"4\")"
   echo "    -t <timeout> - CLI timeout duration in seconds (defaults to 10)"
   echo "    -d <delay> - delay duration in seconds (defaults to 3)"
   echo "    -l <language> - the chaincode language: golang (default) or node"
@@ -121,7 +127,7 @@ function networkUp () {
   echo "###############################################################"
   echo "############### Have Org peers join network ##################"
   echo "###############################################################"
-  docker exec cli ./scripts/step2org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
+  docker exec cli ./scripts/step2org.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE $ORGCODE
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to have Org peers join network"
     exit 1
@@ -240,6 +246,8 @@ CLI_TIMEOUT=10
 CLI_DELAY=3
 # channel name defaults to "mychannel"
 CHANNEL_NAME="mychannel"
+# org code defaults to "4"
+ORGCODE="4"
 # use this as the default docker-compose yaml definition
 COMPOSE_FILE=docker-compose-cli.yaml
 #
@@ -274,6 +282,8 @@ while getopts "h?c:t:d:f:s:l:i:v" opt; do
       exit 0
     ;;
     c)  CHANNEL_NAME=$OPTARG
+    ;;
+    o)  ORGCODE=$OPTARG
     ;;
     t)  CLI_TIMEOUT=$OPTARG
     ;;
